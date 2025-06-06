@@ -1,0 +1,69 @@
+---
+
+import { actions } from "astro:actions";
+
+
+import Layout from "../../layouts/Layout.astro";
+import Star from "../../components/Star.astro";
+import { Image } from "astro:assets";
+import Availibility from "../../components/Availibility.astro";
+
+export const prerender = false;
+
+const {id} = Astro.params
+
+const { data = [] } = await Astro.callAction(actions.getPlaces, { id });
+
+const place = data.find((p) => String(p.id) === id);
+
+if (!place) {
+  throw new Error(`Place not found with id ${id}`);
+}
+
+const imageUrl = `/public/assets/images/${place.image}`
+---
+
+<Layout>
+<a href="/" class="hover:text-blue-600">Volver Home</a>
+
+<p>recarga la pagina para que veas el server aisla funcionando</p>
+ <div class="grid grid-cols-2 gap-2 mt-2">
+
+    <div class="bg-white/80 p-5 rounded-xl">
+<h1 class="text-2xl font-extrabold"># {id} {place.title}</h1>
+<p>{place.description}</p>
+
+  <div class="flex flex-1">
+						{
+							Array.from({length: Number(place.avg_rating)}).map(_ =>(
+
+								<Star/>
+							))
+						}
+                       
+     </div>
+
+     <!-- TODO: SErver Islan -->
+
+     <Availibility server:defer placeId={place.id.toString()}>
+
+       <p slot="fallback" class="bg-gray-300 mt-5 text-center rounded-xl p-2 animate-pulse">Espere</p>
+    </Availibility>
+
+     <!-- <p class="bg-blue-300 mt-5 text-center rounded-xl p-2">Disponible</p>
+     <p class="bg-red-300 mt-5 text-center rounded-xl p-2">No dispoble Disponible</p> -->
+
+    </div>
+
+    <div>
+        <Image
+        src={imageUrl}
+        class={"w-full h-96 object-cover rounded-xl"}
+        width="800"
+        height="800"
+        alt={place.title}
+        />
+    </div>
+
+ </div>
+</Layout>
